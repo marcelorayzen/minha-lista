@@ -1,64 +1,84 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useEffect, useState } from "react";
 
 export interface Task {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   completed: boolean;
   createdAt: string;
 }
 
+const STORAGE_KEY = "minha-lista:tasks_v1";
+
 export default function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-  // Carregar tarefas do localStorage
+  // Carregar tarefas do localStorage somente após montagem
   useEffect(() => {
-    const stored = localStorage.getItem("tasks");
-    if (stored) {
-      try {
-        setTasks(JSON.parse(stored));
-      } catch {
-        console.error("Erro ao ler tarefas do localStorage");
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setTasks(parsed);
+        }
       }
+    } catch (err) {
+      console.error("Erro ao carregar tasks:", err);
     }
+
+    setLoaded(true); // <-- fundamental
   }, []);
 
-  // Salvar tarefas no localStorage
+  // Salvar no localStorage — só depois de 'loaded'
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    if (!loaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (err) {
+      console.error("Erro ao salvar tasks:", err);
+    }
+  }, [tasks, loaded]);
 
-  // Adicionar nova tarefa
-  const addTask = (title: string, description?: string) => {
+  const addTask = (title: string, description = "") => {
     const newTask: Task = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       title,
       description,
       completed: false,
       createdAt: new Date().toISOString(),
     };
+
     setTasks((prev) => [...prev, newTask]);
   };
 
-  // Alternar conclusão
   const toggleTask = (id: string) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+      prev.map((t) =>
+        t.id === id ? { ...t, completed: !t.completed } : t
       )
     );
   };
 
-  // Excluir tarefa
   const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Atualizar tarefa (edição)
-  const updateTask = (id: string, data: Partial<Task>) => {
+  const updateTask = (id: string, data: { title: string; description?: string }) => {
     setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, ...data } : task))
+      prev.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              title: data.title,
+              description: data.description ?? "",
+            }
+          : t
+      )
     );
   };
 

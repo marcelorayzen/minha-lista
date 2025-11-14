@@ -1,16 +1,18 @@
 "use client";
 
+export type Filter = "all" | "active" | "completed";
+
 export interface TaskFilterProps {
-  value: "all" | "active" | "completed";
-  onChange: (filter: "all" | "active" | "completed") => void;
+  value: Filter;
+  onChange: (filter: Filter) => void;
 }
 
 export default function TaskFilter({ value, onChange }: TaskFilterProps) {
-  const filters: { key: "all" | "active" | "completed"; label: string }[] = [
+  const filters = [
     { key: "all", label: "Todas" },
     { key: "active", label: "Pendentes" },
     { key: "completed", label: "Concluídas" },
-  ];
+  ] as const;
 
   return (
     <div className="flex gap-2">

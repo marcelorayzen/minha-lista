@@ -24,11 +24,12 @@ export default function TaskForm({ onAdd, onUpdate, editing }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    const trimmed = title.trim();
+    if (!trimmed) return;
     if (editing) {
-      onUpdate({ ...editing, title, description });
+      onUpdate({ ...editing, title: trimmed, description: description ?? "" });
     } else {
-      onAdd(title, description);
+      onAdd(trimmed, description ?? "");
     }
     setTitle("");
     setDescription("");
@@ -49,13 +50,9 @@ export default function TaskForm({ onAdd, onUpdate, editing }: Props) {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
-      <button
-        type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 transition"
-      >
+      <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 transition">
         {editing ? "Atualizar Tarefa" : "Adicionar Tarefa"}
       </button>
     </form>
   );
 }
-

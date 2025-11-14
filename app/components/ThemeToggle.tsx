@@ -1,37 +1,25 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-
-const THEME_KEY = 'minha-lista:theme';
+"use client";
+import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
-  const [mode, setMode] = useState<'dark' | 'light'>('light');
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === 'dark') {
-      document.documentElement.classList.add('dark');
-      setMode('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      setMode('light');
-    }
+    const stored = localStorage.getItem("minha-lista:dark");
+    setDark(stored === "true");
   }, []);
 
-  function toggle() {
-    if (mode === 'dark') {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem(THEME_KEY, 'light');
-      setMode('light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem(THEME_KEY, 'dark');
-      setMode('dark');
-    }
-  }
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("minha-lista:dark", dark ? "true" : "false");
+  }, [dark]);
 
   return (
-    <button onClick={toggle} className="px-3 py-1 rounded-xl border">
-      {mode === 'dark' ? '🌙 Dark' : '☀️ Light'}
+    <button
+      onClick={() => setDark((d) => !d)}
+      className="border border-gray-400 px-3 py-1 rounded-xl text-sm hover:bg-gray-200 dark:hover:bg-gray-700"
+    >
+      {dark ? "☀️ Light" : "🌙 Dark"}
     </button>
   );
 }
